@@ -1,0 +1,143 @@
+---
+- name: 0) 3-Tier Architecture 구현
+  hosts: web1
+  tasks:
+    ##########################
+    # Play 1 - 웹-PHP-DB 구현
+    # 1. WEB 서버 설정
+    # 1) 패키지 설치
+    # 2) 서비스 설정
+    # 3) 서비스 기동
+    # 4) 방화벽 포트 등록
+    # 2. DB 서버 설정
+    # 1) 패키지 설치
+    # 2) 서비스 설정
+    # 3) 서비스 기동
+    # 4) 방화벽 포트 등록
+    # Play 2 - 확인
+    ##########################
+
+    # Play 1 - 웹-PHP-DB 구현
+    # 1. WEB 서버 설정
+    # 1) 패키지 설치
+    # * 웹 패키지: httpd, mod_ssl
+    # * 언어 패키지: php, php-mysqlnd, php-pdo
+    # * 방화벽 패키지: firewalld
+      - name: 1) 패키지 설치 - 잡다
+        ansible.builtin.dnf:
+          name:
+            - httpd
+            - mod_ssl
+            - php
+            - php-mysqlnd
+            - php-pdo
+            - firewalld
+          state: present
+    # 2) 서비스 설정
+    # * (WEB) /var/www/html/index.php
+      - name: 2) 서비스 설정 - PHP 파일 구성(/var/www/html/index.php)
+        ansible.builtin.get_url:
+          url: http://192.168.10.10/index.php
+          dest: /var/www/html/index.php
+          mode: '0644'
+    # 3) 서비스 기동
+    # * (WEB) httpd.service, firewalld.service
+      - name: 3) 서비스 기동(httpd, firewalld)
+        ansible.builtin.systemd:
+          state: started
+          name: "{{ item  }}"
+          enabled: true
+        loop:
+          - httpd
+          - firewalld
+
+
+    # 4) 방화벽 포트 등록
+    # * (WEB) http, https
+      - name: 4) 방화벽 포트 등록 - http, https
+        ansible.posix.firewalld:
+          service: "{{ item }}"
+          permanent: true
+          state: enabled
+          immediate: true
+        loop:
+          - http
+          - https
+
+
+
+
+
+    # 2. DB 서버 설정
+    # 1) 패키지 설치
+    # * DB 패키지: mariadb-server, madiradb, p3 pms
+      - name: 1) 패키지 설치 - 마리아
+        ansible.builtin.dnf:
+          name:
+            - mariadb-server
+            - mariadb
+            - python3-PyMySQL
+          state: present
+
+
+
+    # 2) 서비스 기동
+    # * (DB) mariadb.service
+      - name: 2) 서비스 기동(mariadb)
+        ansible.builtin.systemd:
+          state: started
+          name: mariadb
+          enabled: true
+
+
+
+    # 3) 서비스 설정
+    # * (DB) mysql_secure_installation
+    #            사용자추가/권한부여 
+      - name: 3) 서비스 설정 - m s i 
+        become: true
+        ansible.builtin.expect:
+          command: mysql_secure_installation
+          responses:
+            'Enter current password for root': ''
+            'Switch to unix_socket authentication': 'Y'
+            'Change the root password?': 'Y'
+            'New password': 'soldesk1.'
+            'Re-enter new password': 'soldesk1.'
+            'Remove anonymous users?': 'Y'
+            'Disallow root login remotely?': 'Y'
+            'Remove test database and access to it?': 'Y'
+            'Reload privilege tables now?': 'Y'
+          timeout: 1
+
+      - name: 3) 서비스 설정 - 사용자/권한 추가 
+        become: true
+        community.mysql.mysql_user:
+          login_user: root
+          login_password: soldesk1.
+          name: soldesk
+          password: soldesk1.
+          priv: '*.*:ALL'
+          state: present
+
+
+
+
+    # 4) 방화벽 포트 등록
+    # * (DB) mysql
+      - name: 4) 방화벽 포트 등록 - http, https
+        ansible.posix.firewalld:
+          service: mysql
+          permanent: true
+          state: enabled
+          immediate: true
+
+# Play 2 - 웹 확인
+- name: 0) 웹서버에 요청
+  hosts: localhost
+  become: false
+  tasks:
+    - name: 1) web1 웹서버에 웹요청 확인
+      ansible.builtin.uri:
+        url: "http://192.168.10.10/index.php"
+        status_code: 200
