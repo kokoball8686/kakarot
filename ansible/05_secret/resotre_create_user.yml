@@ -1,0 +1,14 @@
+---
+- name: restore
+  hosts: webservers
+  vars_files:
+    - secret2.yml
+  tasks:
+    - name: dele
+      user:
+        name: "{{  username }}"
+        state: absent
+        remove: yes
+
+      
+

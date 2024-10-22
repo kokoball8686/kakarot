@@ -1,0 +1,22 @@
+---
+- name: unins
+  hosts: webserver
+  tasks:
+    - name: Start the service
+      service:
+        name: "{{ ansible_local.custom.general.service }}"
+        state: stopped
+    - name: Install the required package
+      yum:
+        name: "{{ ansible_local.custom.general.package }}"
+        state: absent
+    - name: Open the service with firewall
+      firewalld:
+        service: "{{ ansible_local.custom.general.fwsvc }}"
+        permanent: false
+        immediate: false
+        state: disabled
+    - name: 333333일 삭제 - (file) /var/www/html/index.html
+      ansible.builtin.file:
+        path: /etc/ansible/facts.d
+        state: absent
