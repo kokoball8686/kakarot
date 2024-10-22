@@ -5,13 +5,17 @@
     - name: Open the service with firewall
       firewalld:
         service: "{{ ansible_local.custom.general.fwsvc }}"
-        permanent: false
-        immediate: false
+        permanent: true
+        immediate: true
         state: disabled
     - name: Start the service
       service:
-        name: "{{ ansible_local.custom.general.service }}"
+        name: "{{ item }}"
+        enabled: false
         state: stopped
+      loop:
+        - "{{ ansible_local.custom.general.service }}"
+        - firewalld
     - name: Install the required package
       yum:
         name: "{{ ansible_local.custom.general.package }}"
