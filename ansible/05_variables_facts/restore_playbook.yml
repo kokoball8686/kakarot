@@ -1,0 +1,48 @@
+---
+- name: resto
+  hosts: all
+  vars_files:
+    - vars.yml
+  tasks:
+    # * (ㄹ) 방화벽 등록 - http, https
+    ###########################################
+    - name: 4) 포트 등록
+      ansible.posix.firewalld:
+        service: "{{ item }}"
+        permanent: true
+        immediate: true
+        state: disabled
+      loop:
+        - http
+        - https
+
+
+    # * (ㄷ) 서비스 기동
+    ###fire,,,,,,httpd
+    - name: 3) 서비스 기동
+      ansible.builtin.systemd:
+        name: "{{ item }}"
+        state: stopped
+        enabled: false
+      loop:
+        - "{{ firewall_svc }}"
+        - "{{ web_svc }}"
+
+
+    # 3) 서비스 설정 삭제
+    - name: 3) 서비스 설정 삭제
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ web_root }}/index.html"
+        - "{{ web_root }}/.htaccess"
+        - "{{ secrets_dir }}"
+
+    # * (ㄱ) 패키지 설치
+    - name: 1) 패키지 설치 - {{ web_pkg }}, {{ ssl_pkg }}
+      ansible.builtin.dnf:
+        name:
+          - "{{ web_pkg }}"
+          - "{{ ssl_pkg }}"
+        state: absent

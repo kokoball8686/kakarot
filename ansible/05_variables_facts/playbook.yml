@@ -1,0 +1,155 @@
+---
+#########################################
+# Play 01 : .htaccess 파일 사용하는 웹서버 구축
+# * (ㄱ) 패키지 설치
+# * (ㄴ) 서비스 설정
+#    - /etc/httpd/conf/httpd.conf(AllowOveride AuthConfig)
+#    - /var/www/html/.htaccess
+#    - /etc/httpd.secrets/htpasswd
+#    - /var/www/html/index.html
+# * (ㄷ) 서비스 기동
+# * (ㄹ) 방화벽 등록
+# Play 02 : 웹 요청
+#########################################
+- name: 고급 웹서버 구축
+  hosts: ansible1.example.com
+  vars:
+    firewall_pkg: firewalld
+    firewall_svc: firewalld
+    web_pkg: httpd
+    web_svc: httpd
+    ssl_pkg: mod_ssl
+    httpdconf_src: files/httpd.conf
+    httpdconf_dest: /etc/httpd/conf/httpd.conf
+    htaccess_src: files/.htaccess
+    secrets_dir: /etc/httpd/secrets
+    secrets_src: files/htpasswd
+    secrets_dest: "{{ secrets_dir }}/htpasswd"
+    web_root: /var/www/html
+  tasks:
+    ###########################################
+    # * (ㄱ) 패키지 설치
+    - name: 1) 패키지 설치 - {{ firewall_pkg }}, {{ web_pkg }}, {{ ssl_pkg }}
+      ansible.builtin.dnf:
+        name:
+          - "{{ firewall_pkg }}"
+          - "{{ web_pkg }}"
+          - "{{ ssl_pkg }}"
+        state: present
+    # * (ㄴ) 서비스 설정
+    #    - /etc/httpd/conf/httpd.conf(AllowOveride AuthConfig)
+    - name: 2) 서비스 설정 - {{ httpdconf_dest }}
+      ansible.builtin.copy:
+        src: "{{ httpdconf_src }}"
+        dest: "{{ httpdconf_dest }}"
+        owner: root
+        group: root
+        mode: '0644'
+    #    - /var/www/html/.htaccess
+    - name: 2) 서비스 설정 - {{ web_root }}/.htaccess
+      ansible.builtin.copy:
+        src: "{{ htaccess_src }}"
+        dest: "{{ web_root }}"
+        owner: apache
+        group: apache
+        mode: '0400'
+
+    #    - /etc/httpd.secrets/htpasswd
+
+    - name: 2) 서비스 설정 - {{ secrets_dir }}
+      ansible.builtin.file:
+        path: "{{ secrets_dir }}"
+        owner: apache
+        group: apache
+        state: directory
+        mode: '0700'
+    - name: 2) 서비스 설정 - {{ secrets_dest }}
+      ansible.builtin.copy:
+        src: "{{ secrets_src }}"
+        dest: "{{ secrets_dest }}"
+        owner: apache
+        group: apache
+        mode: '0600'
+
+
+
+
+    #    - /var/www/html/index.html
+    - name: 2) 서비스 설정 - {{ web_root }}/index.html
+      ansible.builtin.copy:
+        # /var/www/html/index.html
+        # -------------------------
+        # Hostname - ansible1.example.com
+        # IP - 192.168.10.11
+        #--------------------------
+          content: |
+            <pre>
+            Hostname - {{ ansible_fqdn }}
+            Hostname - {{ ansible_facts["fqdn"] }}
+            IP - {{ ansible_default_ipv4.address }}
+            IP - {{ ansible_facts["default_ipv4"]["address"] }}
+            IP - {{ ansible_facts.default_ipv4.address }}
+            </pre>
+          dest: "{{ web_root }}/index.html"
+          mode: '0644'
+
+
+
+    # * (ㄷ) 서비스 기동
+    ###fire,,,,,,httpd
+    - name: 3) 서비스 기동
+      ansible.builtin.systemd:
+        name: "{{ item }}"
+        state: started
+        enabled: true
+      loop:
+        - "{{ firewall_svc }}"
+        - "{{ web_svc }}"
+
+
+
+
+    # * (ㄹ) 방화벽 등록 - http, https
+    ###########################################
+    - name: 4) 포트 등록
+      ansible.posix.firewalld:
+        service: "{{ item }}"
+        permanent: true
+        immediate: true
+        state: enabled
+      loop:
+        - http
+        - https
+
+####################################################
+- name: Play 01 웹 요청 with 인증
+  hosts: localhost
+  become: false
+  gather_facts: false
+  vars_files:
+    - vars/secret.yml
+  tasks:
+    ########################################################
+    # $ cat /vars/secret.yml
+    # id : guest
+    # pass : guest
+    # $ ansible-vault encrypt vars/secret.yml
+    # $ vi playbook.yml
+    # ansible-playbook playbook --ask-vault-pass
+    #############################
+    - name: 1) 웹 요청 with 사용자 인증
+      ansible.builtin.uri:
+        url: http://ansible1.example.com
+        user: "{{ id }}"
+        password: "{{ pass }}"
+        force_basic_auth: true
+        status_code: 200
+        validate_certs: false
+        return_content: true
+      register: web_output 
+    
+    - name: 2) 웹 출력 확인
+      ansible.builtin.debug:
+        #var: web_output
+        var: web_output.content
+        #msg: test page - {{ web_output }}

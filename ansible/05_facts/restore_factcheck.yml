@@ -16,8 +16,8 @@
     - name: Configuration firewall
       firewalld:
         service: http
-        permanent: true
-        immediate: true
+        permanent: false
+        immediate: false
         state: disabled
 
     - name: httpd is started
