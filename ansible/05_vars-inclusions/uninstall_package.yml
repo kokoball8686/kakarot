@@ -1,0 +1,6 @@
+---
+# tasks
+- name: 패키지 설치
+  ansible.builtin.dnf:
+    name: "{{ unins_package.remo_pkg }}"
+    state: absent

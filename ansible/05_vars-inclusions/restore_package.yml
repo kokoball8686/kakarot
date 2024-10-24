@@ -1,0 +1,5 @@
+---
+unins_package:
+  remo_pkg: 
+    - httpd
+    - tomcat
