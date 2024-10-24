@@ -11,6 +11,15 @@
     config_file_url: "{{ resources_url }}/my.cnf.standard"
     config_file_dst: /etc/my.cnf
   tasks:
+    - name: set db password
+      mysql_user:
+        login_user: root
+        login_password: soldesk1.
+        name: soldesk
+        password: soldesk1.
+        priv: '*.*:ALL'
+        state: absent
+
     - name: 2232323
       ansible.builtin.file:
         path: "{{ config_file_dst }}"
@@ -26,3 +35,4 @@
       yum:
         name: "{{ db_packages }}"
         state: absent
+        

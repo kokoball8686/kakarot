@@ -1,0 +1,13 @@
+      ansible.builtin.expect:
+        command: mysql_secure_installation
+        responses:
+          'Enter current password for root': ''
+          'Switch to unix_socket authentication': 'Y'
+          'Change the root password?': 'Y'
+          'New password': 'soldesk1.'
+          'Re-enter new password': 'soldesk1.'
+          'Remove anonymous users?': 'Y'
+          'Disallow root login remotely?': 'Y'
+          'Remove test database and access to it?': 'Y'
+          'Reload privilege tables now?': 'Y'
+        timeout: 1

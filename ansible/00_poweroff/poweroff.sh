@@ -1,6 +1,6 @@
 #!/bin/bash
 
-WORKDIR=/home/ansible/ansible/00_poweroff
+WORKDIR=/home/ansible/kakarot/ansible/00_poweroff
 INVENTORY=$WORKDIR/inventory
 > $INVENTORY
 

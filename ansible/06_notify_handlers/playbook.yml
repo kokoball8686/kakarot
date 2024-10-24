@@ -42,7 +42,9 @@
 
     - name: set db password
       mysql_user:
-        name: root
+        login_user: root
+        login_password: soldesk1.
+        name: soldesk
         password: soldesk1.
         priv: '*.*:ALL'
         state: present
