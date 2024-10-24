@@ -1,0 +1,6 @@
+---
+package:
+  web_pkg: epel-release
+
+
+# 순서대로 하면 될거같지만 애당초 이렇게 하면 안된다

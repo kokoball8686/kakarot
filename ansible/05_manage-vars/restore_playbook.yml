@@ -1,0 +1,53 @@
+---
+- name: Restore pl
+  hosts: lamp
+  gather_facts: true
+  vars:
+    firewall: firewalld
+  vars_files:
+    - vars/rem_main.yml
+  tasks:
+
+    #############################
+     # 5) 방화벽에 포트 등록
+        # 2) 서비스 기동 - mariadb, httpd, fw
+        # 6) 웹페이지 생성 - /var/www/html/index.html
+    # 1) 서비스 패키지 설치 - mariadb-server, httpd
+    # 커스텀 팩트 삭제
+     #################################
+    - name: 4) 방화벽에 포트 등록 - http
+      # vars_files 지시자 테스트
+      ansible.posix.firewalld:
+        service: "{{ fw_port }}"
+        permanent: true
+        immediate: true
+        state: "{{ fw_state }}"
+      
+    - name: 3) 방화벽 서비스 기동
+      # vars 지시자 테스트
+      ansible.builtin.systemd:
+        name: "{{ item }}"
+        state: stopped
+        enabled: false
+      loop:
+        - "{{ firewall }}"
+        - "{{ ansible_local.custom.services.web_service }}"
+        - "{{ ansible_local.custom.services.db_service }}"
+
+    - name: 5) 웹페이지 생성 - /var/www/html/index.html 
+      ansible.builtin.file:
+        path: "{{ web_root }}/index.html"
+        state: absent
+
+    - name: 2) 방화벽 패키지 설치
+      # vars 지시자 테스트
+      ansible.builtin.dnf:
+        name: 
+          - "{{ ansible_local.custom.packages.db_package }}"
+          - "{{ ansible_local.custom.packages.web_package }}"
+        state: absent
+
+    - name: 5) 커팩 삭제
+      ansible.builtin.file:
+        path: /etc/ansible/facts.d
+        state: absent

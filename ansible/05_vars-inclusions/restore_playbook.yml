@@ -3,8 +3,8 @@
   hosts: all
   tasks:
     - name: 1) 변수 포함 - package.yml
-      include_vars: restore_package.yml
+      include_vars: unvar_package.yml
 
     - name: 2) 패키지 설치 - httpd
-      include_tasks: uninstall_package.yml
+      include_tasks: remove_package.yml
 

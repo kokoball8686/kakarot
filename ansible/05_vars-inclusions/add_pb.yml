@@ -1,0 +1,16 @@
+---
+- name: Play 01 파일 서버 패키지 설치
+  hosts: as
+  tasks:
+    - name: 1) 변수 포함 - package.yml
+      include_vars: ip_var.yml
+
+    - name: 2) 패키지 설치 - httpd
+      include_tasks: ip2.yml
+
+    - name: 2) 패키지 설치 - httpd
+      include_tasks: ip2.yml
+      vars: 
+        package:
+          web_pkg: boxes
+        
