@@ -1,0 +1,34 @@
+---
+- name: 0) 작업 제어 실습
+  hosts: webservers
+  gather_facts: true
+  vars_files:
+    - vars/vars.yml
+  tasks:
+    - name: 4) 방화벽 포트 등록 - http, https
+      firewalld:
+        service: "{{ item }}"
+        state: disabled
+        immediate: true
+        permanent: true
+      loop: "{{ firewall_rules }}"
+
+    - name: Recursively remove directory
+      ansible.builtin.file:
+        path: "{{ item.dest }}"
+        state: absent
+      loop: "{{ web_config_files }}"
+
+    - name: 2) 웹 서비스 기동 - {{ services }}
+      ansible.builtin.systemd:
+        service: "{{ item }}"
+        enabled: false
+        state: stopped
+      loop: "{{ services }}"
+
+    - name: 1) 패키지 설치 - {{ packages }}
+      dnf:
+        name:
+          - httpd
+          - mod_ssl
+        state: absent

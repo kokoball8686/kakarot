@@ -23,6 +23,8 @@
         name: "{{ db_service }}"
         state: started
         enabled: true
+      notify:
+        - 3rd
 
     - name: The {{ config_file_dst }} file has been installed
       get_url:
@@ -39,6 +41,22 @@
       service:
         name: "{{ db_service }}"
         state: restarted
+
+    - name: 3rd
+      ansible.builtin.expect:
+        command: mysql_secure_installation
+        responses:
+          'Enter current password for root': ''
+          'Switch to unix_socket authentication': 'Y'
+          'Change the root password?': 'Y'
+          'New password': 'soldesk1.'
+          'Re-enter new password': 'soldesk1.'
+          'Remove anonymous users?': 'Y'
+          'Disallow root login remotely?': 'Y'
+          'Remove test database and access to it?': 'Y'
+          'Reload privilege tables now?': 'Y'
+        timeout: 1
+
 
     - name: set db password
       mysql_user:

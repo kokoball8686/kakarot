@@ -20,6 +20,7 @@
         priv: '*.*:ALL'
         state: absent
 
+
     - name: 2232323
       ansible.builtin.file:
         path: "{{ config_file_dst }}"
@@ -35,4 +36,3 @@
       yum:
         name: "{{ db_packages }}"
         state: absent
-        

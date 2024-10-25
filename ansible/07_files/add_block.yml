@@ -1,0 +1,12 @@
+---
+- name: 0) 모듈 테스트 - blockinfile
+  hosts: all
+  tasks:
+    - name: 파일에 여러라인추가
+      ansible.builtin.blockinfile:
+        path: /home/devops/users.txt
+        block: |
+          지쳐쓰러지며~~~
+          되돌아가는~~~~~~
+          내 삶이~~~~춰라해 보인대도~~~~~
+        state: present

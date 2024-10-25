@@ -1,0 +1,22 @@
+---
+- name: Task Failure Exercise
+  hosts: databases
+  gather_facts: false
+  vars:
+    web_package: httpd
+    db_package: mariadb-server
+    db_service: mariadb
+  tasks:
+    - name: Start {{ db_service }} service
+      service:
+        name: "{{ db_service }}"
+        state: stopped
+        enabled: false
+
+    - name: Install 
+      ansible.builtin.yum:
+        name: 
+          - "{{ db_package }}"
+          - "{{ web_package }}"
+        state: absent
+
