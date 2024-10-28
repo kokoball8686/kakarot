@@ -1,0 +1,20 @@
+---
+# Task File:
+- name: 방화벽 패키지 설치- {{ packages }}
+  dnf:
+    name: "{{ packages }}"
+    state: present
+
+- name: 방화벽 서비스 기동 - {{ services }}
+  ansible.builtin.systemd:
+    name: "{{ services }}"
+    state: started
+    enabled: true
+
+- name: 방화벽 포트 등록 - {{ rules }}
+  ansible.posix.firewalld:
+    service: "{{ item }}"
+    permanent: true
+    immediate: true
+    state: enabled
+  loop: "{{ rules }}"

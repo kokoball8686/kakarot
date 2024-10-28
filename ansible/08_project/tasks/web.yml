@@ -1,0 +1,12 @@
+---
+# Task File:
+- name: 패키지 설치 - {{ packages }}
+  dnf:
+    name: "{{ packages }}"
+    state: present
+  
+- name: 서비스 기동 - {{ services }}
+  ansible.builtin.systemd:
+    name: "{{ services }}"
+    state: started
+    enabled: true

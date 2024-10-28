@@ -1,0 +1,12 @@
+---
+# playbook
+- name: 0) 웹요청 테스트
+  hosts: localhost
+  become: false
+  gather_facts: false
+  tasks:
+    - name: 웹요청 테스트
+      ansible.builtin.uri:
+        url: "{{ url }}"
+        status_code: 200
+        validate_certs: false

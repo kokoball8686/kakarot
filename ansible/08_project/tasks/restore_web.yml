@@ -1,0 +1,21 @@
+---
+# Task File:
+- name: 서비스 기동 - {{ services }}
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: stopped
+    enabled: false
+  loop: "{{ services }}"
+
+
+- name: 파일 삭제
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop: "{{ files }}"
+
+
+- name: 패키지 설치 - {{ packages }}
+  dnf:
+    name: "{{ packages }}"
+    state: absent
