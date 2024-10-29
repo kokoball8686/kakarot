@@ -1,0 +1,25 @@
+---
+# tasks file for myfirewall
+###########################################
+# 1) 방화벽 패키지 설치
+# 2) 방화벽 패키지 기동
+###########################################
+- name: ㅇ
+  dnf:
+    name: firewalld
+    state: present
+
+- name: ㅇ
+  systemd:
+    name: firewalld
+    state: started
+    enabled: true
+
+
+- name: 4) 방화벽 포트 등록
+  firewalld:
+    service: "{{ item }}"
+    permanent: true
+    immediate: true
+    state: enabled
+  loop: "{{ web_rules }}"

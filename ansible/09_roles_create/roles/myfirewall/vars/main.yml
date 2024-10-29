@@ -1,0 +1,5 @@
+---
+# vars file for myfirewall
+web_rules:
+  - http
+  - https

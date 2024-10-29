@@ -1,0 +1,48 @@
+---
+# tasks file for myvhost
+###########################################
+# * (failed_when) 플랫폼 점검 & 버전 점검
+#      - CentOS
+#       - 9
+# * dnf웹 패키지 설치
+# * systemd웹 서비스 기동
+# * template 웹 서버 설정
+#    - /etc/httpd/conf.d/vhost.conf
+#     /var/www/vhosts/ansible_hostname/index.html
+#    - notify
+
+# * filrewalld 방화벽에 포트 등록
+###########################################
+- name: 1) 배포판 및 버전 확인
+  ansible.builtin.debug:
+    msg: "[점검] CentOS stream 9 버전에서만 존재"
+  failed_when: >
+    ansible_distribution != "CentOS" or
+    ansible_distribution_version != "9"
+
+- name: 2) 웹 패키지 설치
+  ansible.builtin.dnf:
+    name: "{{ web_packages }}"
+    state: present
+
+- name: 3) 웹 서비스 기동
+  ansible.builtin.systemd:
+    name: httpd
+    state: started
+    enabled: true
+
+- name: 가상 호스트 설정
+  ansible.builtin.template:
+    src: vhost.conf.j2
+    dest: /etc/httpd/conf.d/vhost.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: restart_httpd
+
+- name: 3) 웹 소스 코드 생성
+  ansible.builtin.copy:
+    src: files/html/
+    dest: "/var/www/vhosts/{{ ansible_hostname }}"
+    owner: root
+    group: root

@@ -1,0 +1,12 @@
+<VirtualHost *:80>
+    ServerAdmin  webmaster@{{ ansible_fqdn }}
+    ServerName   {{ ansible_fqdn }}
+    DocumentRoot "/var/www/vhosts/{{ ansible_fqdn }}"
+
+    <Directory "/var/www/vhosts/{{ ansible_fqdn }}">
+        Require all granted
+        AllowOverride AuthConfig
+        Options Indexes FollowSymLinks
+    </Directory>
+    
+ </VirtualHost>
