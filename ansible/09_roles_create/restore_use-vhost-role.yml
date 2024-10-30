@@ -1,0 +1,14 @@
+---
+- name: Restore
+  hosts: all
+  tasks:
+    - name: 3
+      ansible.builtin.include_role: 
+        name: rollbacksvc
+      vars:
+        web_files:
+          - /etc/httpd/conf.d/vhost.conf    
+          - /var/www/html/index.html          
+          - /var/www/vhosts
+
+
